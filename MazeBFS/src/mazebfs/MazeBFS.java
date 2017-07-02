@@ -23,6 +23,50 @@ enum Action {
     RIGHT
 }
 
+class Node {
+    private State state;
+    private Node previousNode;
+    private Action previousAction;
+    private int steps;
+
+    public Node(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+
+    public Action getPreviousAction() {
+        return previousAction;
+    }
+
+    public void setPreviousAction(Action previousAction) {
+        this.previousAction = previousAction;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    public void setSteps(int steps) {
+        this.steps = steps;
+    }
+
+    public Node getPreviousNode() {
+        return previousNode;
+    }
+
+    public void setPreviousNode(Node previousNode) {
+        this.previousNode = previousNode;
+    }
+}
+
 class State {
 
     private int row;
@@ -56,7 +100,11 @@ class State {
         }
         return true;
     }
-
+    
+    public String printCoordinates() {
+        return "(" + row + "," + col + ")";
+    }
+    
     public State(int row, int col) {
         this.row = row;
         this.col = col;
@@ -138,6 +186,16 @@ class State {
  */
 public class MazeBFS {
 
+    private static void printPath(Node currentNode) {
+        if (currentNode.getPreviousNode() != null) {
+            printPath(currentNode.getPreviousNode());
+            System.out.print(" - " + currentNode.getPreviousAction() + " - " +
+                    currentNode.getState().printCoordinates());
+        } else {
+            System.out.print(currentNode.getState().printCoordinates());
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -185,12 +243,13 @@ public class MazeBFS {
                 found = true;
             }
 
-            Queue<State> frontier = new LinkedList<>();
+            Queue<Node> frontier = new LinkedList<>();
             Set<State> exploredSet = new HashSet<>();
-            frontier.add(initialState);
+            frontier.add(new Node(initialState));
 
             while (!frontier.isEmpty() && !found) {
-                State currentState = frontier.remove();
+                Node currentNode = frontier.remove();
+                State currentState = currentNode.getState();
 
                 exploredSet.add(currentState);
 
@@ -200,13 +259,20 @@ public class MazeBFS {
                             && !frontier.contains(nextState)
                             && !exploredSet.contains(nextState)) {
 
+                        Node nextNode = new Node(nextState);
+                        nextNode.setPreviousNode(currentNode);
+                        nextNode.setPreviousAction(action);
+                        nextNode.setSteps(currentNode.getSteps() + 1);
+                        
                         if (nextState.equals(goalState)) {
                             System.out.println("Solution found");
+                            System.out.println("Took " + nextNode.getSteps() + " step(s)");
+                            printPath(nextNode);
                             found = true;
                             break;
                         }
-
-                        frontier.add(nextState);
+                        
+                        frontier.add(nextNode);
                     }
                 }
             }
@@ -229,3 +295,11 @@ public class MazeBFS {
     }
 
 }
+
+/*
+Homework:
+1. Measure how much time it takes for the program to run
+2. Count how many states are generated
+3. Count how many nodes go into the frontier
+4. Count how many states go into the explored set
+ */
