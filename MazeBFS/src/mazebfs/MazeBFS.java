@@ -200,10 +200,15 @@ public class MazeBFS {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+//        MazeGenerator generator = new MazeGenerator();
+//        generator.generateMaze("randommaze.in", 1000, 1000, 0.9);
+//        System.exit(0);
+        
         char maze[][];
 
         try {
             // replace with try with resources (google it)
+//            RandomAccessFile input = new RandomAccessFile("randommaze.in", "r");
             RandomAccessFile input = new RandomAccessFile("maze.in", "r");
             String line = input.readLine();
             String tokens[] = line.split("\\ ");
@@ -245,8 +250,12 @@ public class MazeBFS {
 
             Queue<Node> frontier = new LinkedList<>();
             Set<State> exploredSet = new HashSet<>();
+            
+            int maxFrontierSize = 0;
+            
             frontier.add(new Node(initialState));
-
+            maxFrontierSize = Math.max(maxFrontierSize, frontier.size());
+            
             while (!frontier.isEmpty() && !found) {
                 Node currentNode = frontier.remove();
                 State currentState = currentNode.getState();
@@ -267,12 +276,13 @@ public class MazeBFS {
                         if (nextState.equals(goalState)) {
                             System.out.println("Solution found");
                             System.out.println("Took " + nextNode.getSteps() + " step(s)");
-                            printPath(nextNode);
+                            //printPath(nextNode);
                             found = true;
                             break;
                         }
                         
                         frontier.add(nextNode);
+                        maxFrontierSize = Math.max(maxFrontierSize, frontier.size());
                     }
                 }
             }
@@ -280,6 +290,7 @@ public class MazeBFS {
             if (!found) {
                 System.out.println("Solution does not exist");
             }
+            System.out.println("Max frontier size " + maxFrontierSize);
 
             // Homework:
             // Look up trails on The Java Tutorial by Oracle
