@@ -11,6 +11,8 @@ import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Objects;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
@@ -23,14 +25,26 @@ enum Action {
     RIGHT
 }
 
-class Node {
+class Node implements Comparable {
+
     private State state;
     private Node previousNode;
     private Action previousAction;
     private int steps;
-
-    public Node(State state) {
+    private int eRow;
+    private int eCol;
+    
+    public Node(State state, int eRow, int eCol) {
         this.state = state;
+        this.eRow = eRow;
+        this.eCol = eCol;
+    }
+
+    // heuristic function
+    public int h() {
+        int dx = Math.abs(state.getCol() - eCol);
+        int dy = Math.abs(state.getRow() - eRow);
+        return dx + dy;
     }
 
     public State getState() {
@@ -40,7 +54,6 @@ class Node {
     public void setState(State state) {
         this.state = state;
     }
-
 
     public Action getPreviousAction() {
         return previousAction;
@@ -65,6 +78,43 @@ class Node {
     public void setPreviousNode(Node previousNode) {
         this.previousNode = previousNode;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + Objects.hashCode(this.state);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Node other = (Node) obj;
+        if (!Objects.equals(this.state, other.state)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Node that = (Node) o;
+        // return -ve if this < that
+        // return +ve if this > that
+        // return 0 if this == that
+        int thisDistance = this.getSteps() + this.h();
+        int thatDistance = that.getSteps() + that.h();
+        return thisDistance - thatDistance;
+    }
+
 }
 
 class State {
@@ -100,11 +150,11 @@ class State {
         }
         return true;
     }
-    
+
     public String printCoordinates() {
         return "(" + row + "," + col + ")";
     }
-    
+
     public State(int row, int col) {
         this.row = row;
         this.col = col;
@@ -189,27 +239,24 @@ public class MazeBFS {
     private static void printPath(Node currentNode) {
         if (currentNode.getPreviousNode() != null) {
             printPath(currentNode.getPreviousNode());
-            System.out.print(" - " + currentNode.getPreviousAction() + " - " +
-                    currentNode.getState().printCoordinates());
+            System.out.print(" - " + currentNode.getPreviousAction() + " - "
+                    + currentNode.getState().printCoordinates());
         } else {
             System.out.print(currentNode.getState().printCoordinates());
         }
     }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
+
+    public MazeBFS() {
 //        MazeGenerator generator = new MazeGenerator();
 //        generator.generateMaze("randommaze.in", 1000, 1000, 0.9);
 //        System.exit(0);
-        
+
         char maze[][];
 
         try {
             // replace with try with resources (google it)
-//            RandomAccessFile input = new RandomAccessFile("randommaze.in", "r");
-            RandomAccessFile input = new RandomAccessFile("maze.in", "r");
+            RandomAccessFile input = new RandomAccessFile("30steps.in", "r");
+//            RandomAccessFile input = new RandomAccessFile("maze.in", "r");
             String line = input.readLine();
             String tokens[] = line.split("\\ ");
             int rows = Integer.parseInt(tokens[0]);
@@ -220,7 +267,7 @@ public class MazeBFS {
 
             for (int r = 0; r < rows; r++) {
                 line = input.readLine();
-                System.out.println(line);
+                //System.out.println(line);
                 for (int c = 0; c < cols; c++) {
                     maze[r][c] = line.charAt(c);
                 }
@@ -240,6 +287,8 @@ public class MazeBFS {
                 }
             }
 
+            long startTime = System.currentTimeMillis();
+
             boolean found = false;
             State initialState = new State(sRow, sCol);
             State goalState = new State(gRow, gCol);
@@ -248,14 +297,17 @@ public class MazeBFS {
                 found = true;
             }
 
-            Queue<Node> frontier = new LinkedList<>();
+            Queue<Node> frontier = new PriorityQueue<>();
+            Set<Node> frontierSet = new HashSet<>();
             Set<State> exploredSet = new HashSet<>();
-            
+
             int maxFrontierSize = 0;
-            
-            frontier.add(new Node(initialState));
+
+            Node newNode = new Node(initialState, gRow, gCol);
+            frontier.add(newNode);
+            frontierSet.add(newNode);
             maxFrontierSize = Math.max(maxFrontierSize, frontier.size());
-            
+
             while (!frontier.isEmpty() && !found) {
                 Node currentNode = frontier.remove();
                 State currentState = currentNode.getState();
@@ -264,15 +316,14 @@ public class MazeBFS {
 
                 for (Action action : Action.values()) {
                     State nextState = currentState.getNextState(action, maze);
+                    Node nextNode = new Node(nextState, gRow, gCol);
                     if (nextState != null
-                            && !frontier.contains(nextState)
+                            && !frontierSet.contains(nextNode)
                             && !exploredSet.contains(nextState)) {
-
-                        Node nextNode = new Node(nextState);
                         nextNode.setPreviousNode(currentNode);
                         nextNode.setPreviousAction(action);
                         nextNode.setSteps(currentNode.getSteps() + 1);
-                        
+
                         if (nextState.equals(goalState)) {
                             System.out.println("Solution found");
                             System.out.println("Took " + nextNode.getSteps() + " step(s)");
@@ -280,13 +331,16 @@ public class MazeBFS {
                             found = true;
                             break;
                         }
-                        
+
                         frontier.add(nextNode);
+                        frontierSet.add(newNode);
                         maxFrontierSize = Math.max(maxFrontierSize, frontier.size());
                     }
                 }
             }
 
+            long stopTime = System.currentTimeMillis();
+            System.out.printf("Time taken: %.3f seconds\n", (double) ((stopTime - startTime) / 1000));
             if (!found) {
                 System.out.println("Solution does not exist");
             }
@@ -303,6 +357,13 @@ public class MazeBFS {
         } catch (IOException ex) {
             Logger.getLogger(MazeBFS.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        new MazeBFS();
     }
 
 }
