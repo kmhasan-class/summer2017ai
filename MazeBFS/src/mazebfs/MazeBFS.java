@@ -110,8 +110,12 @@ class Node implements Comparable {
         // return -ve if this < that
         // return +ve if this > that
         // return 0 if this == that
+        
+        // A* search
         int thisDistance = this.getSteps() + this.h();
         int thatDistance = that.getSteps() + that.h();
+//        int thisDistance = this.h();
+//        int thatDistance = that.h();
         return thisDistance - thatDistance;
     }
 

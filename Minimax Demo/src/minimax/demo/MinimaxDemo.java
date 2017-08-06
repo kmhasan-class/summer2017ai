@@ -17,9 +17,9 @@ public class MinimaxDemo {
     public static void main(String[] args) {
         State state = Reader.getState("board.in");
         System.out.println(state);
-        System.out.println(state.getUtility());
-        //MoveGenerator moveGenerator = new MoveGenerator();
-        //System.out.println(moveGenerator.doMinimax(state));
+        //System.out.println(state.getUtility());
+        MoveGenerator moveGenerator = new MoveGenerator();
+        System.out.println(moveGenerator.doMinimax(state));
     }
     
 }

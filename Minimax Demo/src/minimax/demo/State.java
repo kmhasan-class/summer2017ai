@@ -5,7 +5,9 @@
  */
 package minimax.demo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -134,6 +136,31 @@ public class State {
         return 0;
     }
 
+    public List<Cell> getFreeCells() {
+        List<Cell> freeCellList = new ArrayList<>();
+        for (int r = 0; r < board.length; r++)
+            for (int c = 0; c < board[r].length; c++)
+                if (board[r][c] == '.')
+                    freeCellList.add(new Cell(r, c));
+        return freeCellList;
+    }
+    
+    public State getNextState(Cell cell) {
+        Player nextPlayer = null;
+        if (currentPlayer == Player.X)
+            nextPlayer = Player.O;
+        else nextPlayer = Player.X;
+
+        State nextState = new State(board.length, nextPlayer);
+        
+        for (int r = 0; r < board.length; r++)
+            for (int c = 0; c < board[r].length; c++)
+                nextState.board[r][c] = board[r][c];
+        
+        nextState.board[cell.getRow()][cell.getCol()] = (byte) currentPlayer.name().charAt(0);
+        return nextState;
+    }
+    
     @Override
         public String toString() {
         return "State{" + "board=\n" + boardToString() + ", currentPlayer=" + currentPlayer + '}';
