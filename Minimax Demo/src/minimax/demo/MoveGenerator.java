@@ -10,13 +10,23 @@ package minimax.demo;
  * @author kmhasan
  */
 public class MoveGenerator {
-
+    private Player firstPlayer;
+    
+    private int getUtility(State state) {
+        Player winner = state.getWinner();
+        if (winner == null)
+            return 0;
+        if (winner == firstPlayer)
+            return +1;
+        else return -1;
+    }
+    
     private double getMaxValue(State currentState) {
         double bestUtility = Double.NEGATIVE_INFINITY;
-        System.out.println("MAX " + currentState);
+        //System.out.println("MAX " + currentState);
         if (currentState.isTerminal()) {
-            System.exit(0);
-            return currentState.getUtility();
+            //System.out.println("Utility: " + getUtility(currentState));
+            return getUtility(currentState);
         }
 
         for (Cell cell : currentState.getFreeCells()) {
@@ -31,10 +41,10 @@ public class MoveGenerator {
 
     private double getMinValue(State currentState) {
         double bestUtility = Double.POSITIVE_INFINITY;
-        System.out.println("MIN " + currentState);
+        //System.out.println("MIN " + currentState);
         if (currentState.isTerminal()) {
-            System.exit(0);
-            return currentState.getUtility();
+            //System.out.println("Utility: " + getUtility(currentState));
+            return getUtility(currentState);
         }
 
         for (Cell cell : currentState.getFreeCells()) {
@@ -51,7 +61,8 @@ public class MoveGenerator {
     public Cell doMinimax(State initialState) {
         Cell bestCell = null;
         double bestUtility = Double.NEGATIVE_INFINITY;
-
+        firstPlayer = initialState.currentPlayer;
+        
         for (Cell cell : initialState.getFreeCells()) {
             State nextState = initialState.getNextState(cell);
             double utility = getMinValue(nextState);

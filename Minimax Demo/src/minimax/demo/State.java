@@ -52,14 +52,14 @@ public class State {
         }
         if (!foundFreeCell) {
             return true;
-        } else if (getUtility() == 0) {
+        } else if (getWinner() == null) {
             return false;
         } else {
             return true;
         }
     }
 
-    public int getUtility() {
+    public Player getWinner() {
         boolean hasSameSymbol;
         byte firstSymbol;
 
@@ -73,10 +73,10 @@ public class State {
                 }
             }
             if (hasSameSymbol == true && ((char) firstSymbol != '.')) {
-                if (("" + (char) firstSymbol).equals(currentPlayer.name())) {
-                    return +1;
+                if ((char) firstSymbol == 'X') {
+                    return Player.X;
                 } else {
-                    return -1;
+                    return Player.O;
                 }
             }
         }
@@ -91,10 +91,10 @@ public class State {
                 }
             }
             if (hasSameSymbol == true && ((char) firstSymbol != '.')) {
-                if (("" + (char) firstSymbol).equals(currentPlayer.name())) {
-                    return +1;
+                if ((char) firstSymbol == 'X') {
+                    return Player.X;
                 } else {
-                    return -1;
+                    return Player.O;
                 }
             }
         }
@@ -109,10 +109,10 @@ public class State {
         }
 
         if (hasSameSymbol == true && ((char) firstSymbol != '.')) {
-            if (("" + (char) firstSymbol).equals(currentPlayer.name())) {
-                return +1;
+            if ((char) firstSymbol == 'X') {
+                return Player.X;
             } else {
-                return -1;
+                return Player.O;
             }
         }
 
@@ -126,43 +126,50 @@ public class State {
         }
 
         if (hasSameSymbol == true && ((char) firstSymbol != '.')) {
-            if (("" + (char) firstSymbol).equals(currentPlayer.name())) {
-                return +1;
+            if ((char) firstSymbol == 'X') {
+                return Player.X;
             } else {
-                return -1;
+                return Player.O;
             }
         }
-        
-        return 0;
+
+        return null;
     }
 
     public List<Cell> getFreeCells() {
         List<Cell> freeCellList = new ArrayList<>();
-        for (int r = 0; r < board.length; r++)
-            for (int c = 0; c < board[r].length; c++)
-                if (board[r][c] == '.')
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[r].length; c++) {
+                if (board[r][c] == '.') {
                     freeCellList.add(new Cell(r, c));
+                }
+            }
+        }
         return freeCellList;
     }
-    
+
     public State getNextState(Cell cell) {
         Player nextPlayer = null;
-        if (currentPlayer == Player.X)
+        if (currentPlayer == Player.X) {
             nextPlayer = Player.O;
-        else nextPlayer = Player.X;
+        } else {
+            nextPlayer = Player.X;
+        }
 
         State nextState = new State(board.length, nextPlayer);
-        
-        for (int r = 0; r < board.length; r++)
-            for (int c = 0; c < board[r].length; c++)
+
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[r].length; c++) {
                 nextState.board[r][c] = board[r][c];
-        
+            }
+        }
+
         nextState.board[cell.getRow()][cell.getCol()] = (byte) currentPlayer.name().charAt(0);
         return nextState;
     }
-    
+
     @Override
-        public String toString() {
+    public String toString() {
         return "State{" + "board=\n" + boardToString() + ", currentPlayer=" + currentPlayer + '}';
     }
 
